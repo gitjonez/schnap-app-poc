@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 )
@@ -57,10 +58,11 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.Println("Starting schnap")
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/save/", saveHandler)
-	http.ListenAndServe(":8080", nil)
+	log.Fatalln(http.ListenAndServe(":8080", nil))
 
 	/* Initial test code
 	p1 := &Page{Title: "TestPage", Body: []byte("This is a sample page.")}
