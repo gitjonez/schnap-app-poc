@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Page struct {
@@ -57,17 +59,20 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	dt := time.Now()
+	version, _ := os.ReadFile("VERSION")
+	fmt.Fprintf(w, "<div><pre>\n"+
+		"Version: %s\n"+
+		"DateTime: %s\n"+
+		"</pre></div>\n", version, dt)
+}
+
 func main() {
 	log.Println("Starting schnap")
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/save/", saveHandler)
+	http.HandleFunc("/health/", healthHandler)
 	log.Fatalln(http.ListenAndServe(":8080", nil))
-
-	/* Initial test code
-	p1 := &Page{Title: "TestPage", Body: []byte("This is a sample page.")}
-	p1.save()
-	p2, _ := loadPage("TestPage")
-	fmt.Println(string(p2.Body))
-	*/
 }
