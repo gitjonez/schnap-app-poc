@@ -34,12 +34,16 @@ func loadPage(title string) (*Page, error) {
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
-	if err == nil {
+	if err != nil {
+		log.Printf("[DEBUG] renderTemplate called with tmpl '%s', title '%s'",
+			tmpl, p.Title)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+func makeHandler(
+	fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		m := validPath.FindStringSubmatch(r.URL.Path)
 		if m == nil {
