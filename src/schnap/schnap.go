@@ -35,8 +35,6 @@ func loadPage(title string) (*Page, error) {
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
 	if err != nil {
-		log.Printf("[DEBUG] renderTemplate called with tmpl '%s', title '%s'",
-			tmpl, p.Title)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -58,6 +56,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
 	p, err := loadPage(title)
 	if err != nil {
 		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
+		return
 	}
 	renderTemplate(w, "view", p)
 }
@@ -77,6 +76,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
 	if err != nil {
 		log.Println("saveHandler.Page.Save:" + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
