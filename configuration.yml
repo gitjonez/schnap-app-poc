@@ -1,0 +1,14 @@
+# App Service Architecture
+project_label: schnap
+domain_name: jonez.tech
+aws_profile: dennis.mahle
+aws_region: 
+  name: us-west-2
+  key_pair: schnap-rsa
+network:
+   vpc_cidr: "10.4.0.0/16"
+   subnets:
+   - subnet_1: "10.4.1.0/24"
+   - subnet_2: "10.4.2.0/24"
+   - subnet_3: "10.4.3.0/24"
+   - subnet_4: "10.4.4.0/24"
