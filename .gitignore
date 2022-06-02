@@ -1,3 +1,9 @@
+# IDE
+.vscode/
+
+# Miscellaneous
+*.txt
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
