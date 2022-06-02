@@ -1,7 +1,7 @@
 import sys
 import yaml
-import boto3
 from typing import Union, Dict
+from boto3 import Session
 
 Entry = Union[str, dict]
 Config = Union[Entry, None]
@@ -29,10 +29,23 @@ class Aws:
     '''
     def __init__(self, profile):
         self.profile_name = profile
-        self.session = boto3.Session(profile_name=profile)
+        self.session = Session(profile_name=profile)
+
+class Network:
+    '''Network Helper
+    '''
+    def __init__(self, config: Config, session: Session): 
+        self.session = session
+
+class Vpc:
+    '''Vpc helper
+    '''
+    def __init__(self, config: Config):
+        self.vpc_config: Config = config
 
 class Dns:
     pass
+
 
 
 if __name__ == '__main__':
