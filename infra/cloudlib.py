@@ -46,6 +46,7 @@ class Network:
         self.region: str = region
         self.ec2: resource = ec2
         self.vpc: resource = None
+        self.subnets: resource = None
 
     def __str__(self) -> str:
         '''Represent self as a string for:
@@ -93,6 +94,12 @@ class Network:
             cidr = subn[label]
             az = f'{self.region}{letter}'
             self.vpc.create_subnet(CidrBlock=cidr, AvailabilityZone=az)
+        self.subnets = list(self.vpc.subnets.all())
+
+    def delete_subnets(self):
+        for sn in self.subnets:
+            sn.delete()
+        self.subnets = list(self.vpc.subnets.all())
 
 
 if __name__ == '__main__':
@@ -115,7 +122,13 @@ if __name__ == '__main__':
     print()
 
     net.add_subnets()
-    print('Subnets created: ')
+    print('Subnets created:')
+    for sn in net.subnets:
+        print(f' {sn.id} {sn.cidr_block} {sn.availability_zone}')
+
+    print('Delete subnets:')
+    net.delete_subnets()
+    print(f'Remaining Subnets: {net.subnets}, count: {len(net.subnets)}')
 
     print(f'Delete VPC: {vpc_cidr}:{net.vpc.id}')
     net.delete_vpc()
