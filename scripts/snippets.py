@@ -27,3 +27,14 @@ change_req = {
 
 _ = dns.change_resource_record_sets(HostedZoneId=jzone,
                                     ChangeBatch=change_req['ChangeBatch'])
+
+ec2cli = ses.client('ec2')
+response = ec2cli.describe_images(Filters=[{
+    'Name':
+    'description',
+    'Values': ['Amazon Linux 2 Kernel 5.10 AMI 2.0.20220426.0 x86_64 HVM gp2']
+}, {
+    'Name': 'is-public',
+    'Values': ['true']
+}])
+
