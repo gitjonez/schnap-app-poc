@@ -1,5 +1,6 @@
 import sys
 import yaml
+from string import ascii_lowercase
 from typing import Dict, Any, Union
 from boto3 import Session, resource
 from botocore.exceptions import ClientError
@@ -33,18 +34,20 @@ class Aws:
     def __init__(self, profile: str):
         self.profile_name = profile
         self.session = Session(profile_name=profile)
+        self.region: str = self.session.region_name
         self.ec2_resource = self.session.resource('ec2')
 
 
 class Network:
     '''Network Helper'''
 
-    def __init__(self, config: Config, ec2: resource):
+    def __init__(self, config: Config, ec2: resource, region: str):
         self.config: Config = config
+        self.region: str = region
         self.ec2: resource = ec2
         self.vpc: resource = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         '''Represent self as a string for:
            print(net), for example. 
         '''
@@ -84,22 +87,36 @@ class Network:
 
         self.vpc = None
 
+    def add_subnets(self):
+        for subn, letter in zip(self.config['subnets'], ascii_lowercase):
+            label = list(subn)[0]
+            cidr = subn[label]
+            az = f'{self.region}{letter}'
+            self.vpc.create_subnet(CidrBlock=cidr, AvailabilityZone=az)
+
 
 if __name__ == '__main__':
     # test code
     c = Configuration(f'../{CONF_FILE}')
     cloud = Aws(c.config['aws_profile'])
-    net = Network(c.config['network'], cloud.ec2_resource)
+    net = Network(c.config['network'], cloud.ec2_resource, cloud.region)
     vpc_cidr: str = net.config['vpc_cidr']
+    subnets: list = net.config['subnets']
 
     print(f'Create VPC: {vpc_cidr}')
     net.add_vpc(vpc_cidr)
-
     print(net)
-    #print('Network:')
-    #print(f'  Vpc resource: {net.vpc}')
-    #print(f'    Id: {net.vpc.id}')
-    #print(f'  Cidr: {net.vpc.cidr_block}')
+
+    print('Add Subnets, specified:')
+    for sn in subnets:
+        label: str = list(sn)[0]
+        cidr = sn[label]
+        print(f' {cidr} ', end='')
+    print()
+
+    net.add_subnets()
+    print('Subnets created: ')
 
     print(f'Delete VPC: {vpc_cidr}:{net.vpc.id}')
     net.delete_vpc()
+    print(net)
