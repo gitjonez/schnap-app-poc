@@ -1,19 +1,22 @@
 import sys
+import json
 import boto3
 from boto3 import resource
 from botocore.exceptions import ClientError
 
-# globals / CONSTANTS
+# globals: set in func connect()
 ses: boto3.Session = None
 ec2: boto3.resource = None
 elbv2: boto3.client = None
 region: str = ''
 owner_id: str = ''
 
+# "Constants"
 INSTANCE_TYPE = 't2.micro'
 KEY_PAIR = 'schnap-rsa'
 PROJECT_NAME = 'schnap'
 PRIVATE_SUBNET = 'private-traffic'
+TARGET_LISTEN_PORT = '8080'
 
 
 def usage():
@@ -36,8 +39,10 @@ def connect(aws_profile: str):
 
 
 def describe_instances(ami: str = '') -> list:
-    '''Return instance ids. If ami is passed, if it's already running
-        (we don't have to start an instance) return list of instances
+    '''Return instances running this AMI.
+       If ami is passed, if it's already running - we don't
+       have to start an instance. Return empty list if we need to 
+       start an instance.  Default behavior (AMI='') is list running instances.
     '''
     instances: list = []
     for instance in ec2.instances.all():
@@ -65,7 +70,7 @@ def find_image(ami: str) -> bool:
 
 
 def get_security_group() -> str:
-    '''Find security group by configured name
+    '''Find security group by configured name (PRIVATE_SUBNET)
        Return "group_id" '''
     return list(
         ec2.security_groups.filter(Filters=[{
@@ -75,10 +80,10 @@ def get_security_group() -> str:
 
 
 def get_subnet_res(avzone: str, filter: str = 'private') -> list:
-    '''Return list(resources)  One or none
+    '''Get subnets in Availability Zone for private subnet (by name)
+    Return list(resources)  One or none
         (assumes only one tag: Name) '''
     zone = f'{region}{avzone}'
-    print(f'zone = {zone}')
     subnets = list(ec2.subnets.all())
     matches = []
     for sn in subnets:
@@ -147,7 +152,35 @@ def get_target_group_arn(name=PROJECT_NAME) -> str:
     return tg['TargetGroupArn']
 
 
+def register_target(instance, target_group_arn):
+    '''Updated service instance is running: add to Target Group'''
+    try:
+        resp = elbv2.register_targets(Targets=[{
+            'Id': instance,
+            'Port': 8080
+        }],
+                                      TargetGroupArn=target_group_arn)
+    except Exception as e:
+        # InvalidTargetException
+        print(f"* Error: D'oh!  {e}")
+        sys.exit()
+
+
+def get_target_group_health(target_group_arn) -> list:
+    health = elbv2.describe_target_health(TargetGroupArn=target_group_arn)
+    if 'TargetHealthDescriptions' in health.keys():
+        targets = health['TargetHealthDescriptions']
+        states = []
+        for target in targets:
+            states.append(target['TargetHealth']['State'])
+        return states
+    else:
+        return []
+
+
+# Main
 if __name__ == '__main__':
+    # Args
     args = sys.argv.copy()
     if '-h' in args:
         usage()
@@ -157,12 +190,15 @@ if __name__ == '__main__':
 
     aws_profile = args[1]
     ami_id = args[2]
+
     connect(aws_profile)
 
+    # Verify AMI exists
     if not find_image(ami_id):
         print(f'AMI "{ami_id}" not found.')
         sys.exit()
 
+    # Launch Instance from deployed AMI
     running = False
     instances = describe_instances(ami_id)
     if instances:
@@ -173,5 +209,17 @@ if __name__ == '__main__':
         print(f'Launching instance from {ami_id} ...')
         instance_id = run_instance(ami_id)
     print(f'Instance launched...')
+
+    # Add updated service node to the LB
+    print(f'Checking target group...')
     target_grp_arn = get_target_group_arn()
     print(f'target_grp_arn: {target_grp_arn}')
+    waiter = ses.client('ec2').get_waiter('instance_running')
+    print(f'Waiting for instance to enter "running" state...')
+    waiter.wait(InstanceIds=[instance_id])
+
+    # start test client in real life at this time
+    print(f'Register target...')
+    register_target(instance_id, target_grp_arn)
+
+    print(f'We cool? Cool!')
