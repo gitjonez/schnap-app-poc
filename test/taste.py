@@ -1,4 +1,3 @@
-from re import I
 import sys
 import boto3
 from boto3 import resource
