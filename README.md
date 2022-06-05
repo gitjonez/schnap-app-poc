@@ -1,6 +1,9 @@
 # dennis-mahle
 Sample AWS Project
 
+## TODO
+Clean up this doc. 
+
 ## Outline
 - src/schnap:  *Sample "webapp"*
 - Bring up services
@@ -11,7 +14,11 @@ Sample AWS Project
   - Data
 - Deploy Update
 
-## Requirements
+## Prerequisites
+- 2 AZ VPC: pub/priv subnet on each
+- 2 AMIs: current service + upgraded service
+- 2 Running instances, one on each 
+- 
 
 ### Account - IAM user - `~/.aws/config` stuff
 - I've picked a project name `schnap`
