@@ -12,3 +12,8 @@ network:
    - subnet_2: "10.4.2.0/24"
    - subnet_3: "10.4.3.0/24"
    - subnet_4: "10.4.4.0/24"
+
+operational:
+  us_west_2:
+    ami_schnap_v1_0_5: ami-01be087946c03b82c
+    ami_schnap_v1_0_6: ami-0f333223621ac4172
