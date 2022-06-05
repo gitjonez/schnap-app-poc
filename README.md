@@ -6,6 +6,8 @@ Doodling with AWS ELB using EC2 for a zero downtime upgrade.
 ## Table of Contents
 - Architecture
 - Web Service
+- Prerequisites
+- Performing the upgrade
 
 ## Architecture
 I've set up a very simple "website" with a classic setup in AWS cloud. 
@@ -69,3 +71,7 @@ The hot upgrade tools have been developed with Python. Yeah, we probably could/s
  - python >= 3.7 (tested with python 3.9)
  - boto3
  - yaml (for the incomplete `cloudlib.py`, yamo based configuration)
+
+## Performing the upgrade
+### Test Client
+There's a simple test client: `test/client.py`
