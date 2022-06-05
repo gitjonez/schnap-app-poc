@@ -1,0 +1,13 @@
+[Unit]
+Description=schnap demo service
+After=network.target
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=schnap
+WorkingDirectory=/home/schnap/src/src/schnap
+ExecStart=/home/schnap/src/src/schnap/schnap
+
+[Install]
+WantedBy=multi-user.target
