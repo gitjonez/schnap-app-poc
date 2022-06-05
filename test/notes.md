@@ -27,3 +27,23 @@ target_grp_arn: arn:aws:elasticloadbalancing:us-west-2:864095940680:targetgroup/
 Waiting for instance to enter "running" state...
 Register target...
 We cool? Cool!
+
+IMAGE SETUP
+manual
+yum install git golang
+install schnap.service
+ssh identity setup
+add user
+git clone <ssh-link>
+go build ~/.../schnap.go
+chmod ... ec2_user
+test/verify service (elinks)
+Create AMI
+
+Create new build (new version) update the code on the builder instance
+Create AMI
+
+Start v1 of the AMIs 
+Add instances to TargetGroup
+
+Create load balancer; configure, test with client.py
