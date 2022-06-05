@@ -26,9 +26,12 @@ def get_version(health_url, recomp, timeout=10):
 if __name__ == '__main__':
 
     health_url = 'http://schnap.jonez.tech/health/'
+    if len(sys.argv) == 2:
+        health_url = sys.argv[1]
     recomp = re.compile(r'Version: (\d+\.\d+\.\d+)')
     status_counts: Counter = Counter()
     version_counts: Counter = Counter()
+    print(f'Starting load to: {health_url}')
 
     while True:
         with concurrent.futures.ThreadPoolExecutor() as executor:
