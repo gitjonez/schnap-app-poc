@@ -52,7 +52,7 @@ schnap-app-subnet-private1-us-west-2a	us-west-2a	10.2.128.0/20
 ### Infra and Application started and operational
 This POC primarily demonstrates the hot upgrade. Some work was done to "rewrite terraform" but, zero downtime upgrade was the priority
 
-#### Account - IAM user configured
+### Account - IAM user configured
 `~/.aws/config` (accounts, access keys)
 
 ### SSH Key pair
@@ -72,11 +72,14 @@ The hot upgrade tools have been developed with Python. Yeah, we probably could/s
  - python >= 3.7 (tested with python 3.9)
  - boto3
  - yaml (for the incomplete `cloudlib.py`, yamo based configuration)
+ 
+A python runtime is beyond the scope of this document but basically, with your favorite python env manager, create a new "pyenv" (python=3.9) and install `boto3` and `pyyaml`.
+If there were smoke tests, we'd run those to check compilation and link. It would probably be wise to test new CI/CD tools on a dev/stage enviroment before having at it "in real life", PROD, or whatever you want to call it  =)
 
 ## Performing the upgrade
 ### Test Client
 There's a simple test client: `test/client.py`
-Quick and dirty multithreaded client which tracks health through the load balancer: Cumulative stats of:
+Quick and dirty, multithreaded client which tracks health through the load balancer: Cumulative stats of:
 - Reported Versions (and counts)
 - HTTP status codes (and counts)
 Just run the python script: it fires off 20 requests and sleeps for a short period of time and continues until ^C or other process interruption. 
@@ -115,7 +118,7 @@ So, upgrade would be:
 - analyze health
 - prompt engineer (at first) to GO/NO-GO. 
 - If GO:
-  - The missing link is to launch instances of the new AMIs, and register them with the Target Group(s) which the LB is forwarding to.  
+  - The missing link, after one taste is to launch instances of the new AMIs, and register them with the Target Group(s) which the LB is forwarding to.  
   - Monitor health (with client.py, automatically)
   - Deregister replaced Instances
   - Monitor health
@@ -126,9 +129,9 @@ So, upgrade would be:
   - (eventually) Continue the automation regime – extend and maintain the CI/CD
 
 ### Step-by-step
-- Prepare the pre-requisites above
-- Verify the app with `client.py`
 - Clone this repo
+- Prepare the prerequisites 
+- Verify the app with `client.py`
 - [re]start `client.py`
 - Taste the new image ("run the script")
   - `cd test`
@@ -212,5 +215,7 @@ versions:
 ^C---------------------------------------------------------------------------
 KeyboardInterrupt
 ```
+
+*NB for cost reasons, the site is turned off at the moment*
 
 You made it to the end! Congrats!
