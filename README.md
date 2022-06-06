@@ -7,7 +7,7 @@ Doodling with AWS ELB using EC2 for a zero downtime upgrade.
 - Architecture
 - Web Service
 - Prerequisites
-- Performing the upgrade
+- Executing the Upgrade
 
 ## Architecture
 I've set up a very simple "website" with a classic setup in AWS cloud. 
@@ -44,6 +44,7 @@ schnap-app-subnet-private1-us-west-2a	us-west-2a	10.2.128.0/20
 - This health check is extremely simple: if successful, returns the version of the service and system datetime. (HTTP 200)
 - For "reasons", I went with a custom web server/web app written in the Go programming language, leveraging the standard library "net/http" package. 
 - See: `src/schnap/schnap.go`
+- and service definition: `src/schnap/schnap.service`
 
 
 ## Prerequisites
@@ -81,7 +82,8 @@ Quick and dirty multithreaded client which tracks health through the load balanc
 Just run the python script: it fires off 20 requests and sleeps for a short period of time and continues until ^C or other process interruption. 
 Example: 
 ```
-shell> python client.py
+shell$ cd test/
+shell$ python client.py
 Starting load to: http://schnap.jonez.tech/health/
 statuses:
  200: 20
@@ -101,7 +103,114 @@ versions:
 Spoiler alert: this is how we're testing the upgrade. 
 
 ## Executing the upgrade
+`cd test && taste.py aws_profile ami_id`
+
 We'll "taste" a new app server version by bring up a new node with the new version. As explained above: This AMI needs to be pre-built and ready to launch. 
 
 Spoiler alert: we didn't get past the tasting and and automated backout or "GO" to upgrade all the nodes but we're 90% there. 
+The `taste` code will be modularized and included by the (TBD) `upgrade` code with backout capabilities. 
+So, upgrade would be: 
+- taste
+- test
+- analyze health
+- prompt engineer (at first) to GO/NO-GO. 
+- If GO:
+  - The missing link is to launch instances of the new AMIs, and register them with the Target Group(s) which the LB is forwarding to.  
+  - Monitor health (with client.py, automatically)
+  - Deregister replaced Instances
+  - Monitor health
+  - Stop replaced instances
+  - Monitor health
+  - (eventually) Terminate replaced instances
+  - (eventually) Deregister old AMIs
+  - (eventually) Continue the automation regime – extend and maintain the CI/CD
 
+### Step-by-step
+- Prepare the pre-requisites above
+- Verify the app with `client.py`
+- Clone this repo
+- [re]start `client.py`
+- Taste the new image ("run the script")
+  - `cd test`
+  - `python taste.py AWS_PROFILE_NAME AMI_IMAGE`
+- Monitor output of both modules
+
+### Actual output:
+*taste.py*
+```
+❯ ipython taste.py dennis.mahle ami-0f333223621ac4172
+Launching instance from ami-0f333223621ac4172 ...
+subnet: subnet-0bd5b40edeb31d44f
+security group: sg-02fbcf414c3764d5b
+Instance i-0d8548befdc7be5a7 launched ...
+Instance launched...
+Checking target group...
+target_grp_arn: arn:aws:elasticloadbalancing:us-west-2:864095940680:targetgroup/schnap/a7218432cb73f883
+Waiting for instance to enter "running" state...
+Register target...
+We cool? Cool!
+```
+*client.py* (simultaneously)
+```
+❯ ipython client.py
+Starting load to: http://schnap.jonez.tech/health/
+statuses:
+ 200: 20
+versions:
+ 0.1.5: 20
+
+statuses:
+ 200: 40
+versions:
+ 0.1.5: 40
+
+statuses:
+ 200: 60
+versions:
+ 0.1.5: 60
+
+statuses:
+ 200: 80
+versions:
+ 0.1.5: 80
+
+statuses:
+ 200: 100
+versions:
+ 0.1.5: 100
+
+statuses:
+ 200: 120
+versions:
+ 0.1.5: 120
+
+statuses:
+ 200: 140
+versions:
+ 0.1.5: 140
+
+statuses:
+ 200: 160
+versions:
+ 0.1.5: 160
+
+statuses:
+ 200: 180
+versions:
+ 0.1.5: 173 0.1.6: 7
+
+statuses:
+ 200: 200
+versions:
+ 0.1.5: 187 0.1.6: 13
+
+statuses:
+ 200: 220
+versions:
+ 0.1.5: 200 0.1.6: 20
+
+^C---------------------------------------------------------------------------
+KeyboardInterrupt
+```
+
+You made it to the end! Congrats!
