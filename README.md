@@ -1,7 +1,8 @@
-# dennis-mahle
+# schnap-app-poc 
 Sample AWS Project
 
 Doodling with AWS ELB using EC2 for a zero downtime upgrade.
+(was: repo: dennis-mahle)
 
 ## Table of Contents
 - Architecture
