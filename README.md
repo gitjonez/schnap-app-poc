@@ -75,3 +75,33 @@ The hot upgrade tools have been developed with Python. Yeah, we probably could/s
 ## Performing the upgrade
 ### Test Client
 There's a simple test client: `test/client.py`
+Quick and dirty multithreaded client which tracks health through the load balancer: Cumulative stats of:
+- Reported Versions (and counts)
+- HTTP status codes (and counts)
+Just run the python script: it fires off 20 requests and sleeps for a short period of time and continues until ^C or other process interruption. 
+Example: 
+```
+shell> python client.py
+Starting load to: http://schnap.jonez.tech/health/
+statuses:
+ 200: 20
+versions:
+ 0.1.5: 20
+
+statuses:
+ 200: 40
+versions:
+ 0.1.5: 40
+
+statuses:
+ 200: 60
+versions:
+ 0.1.5: 60
+```
+Spoiler alert: this is how we're testing the upgrade. 
+
+## Executing the upgrade
+We'll "taste" a new app server version by bring up a new node with the new version. As explained above: This AMI needs to be pre-built and ready to launch. 
+
+Spoiler alert: we didn't get past the tasting and and automated backout or "GO" to upgrade all the nodes but we're 90% there. 
+

@@ -47,3 +47,63 @@ Start v1 of the AMIs
 Add instances to TargetGroup
 
 Create load balancer; configure, test with client.py
+
+❯ ipython client.py
+Starting load to: http://schnap.jonez.tech/health/
+statuses:
+ 200: 20
+versions:
+ 0.1.5: 20
+
+statuses:
+ 200: 40
+versions:
+ 0.1.5: 40
+
+statuses:
+ 200: 60
+versions:
+ 0.1.5: 60
+
+statuses:
+ 200: 80
+versions:
+ 0.1.5: 80
+
+statuses:
+ 200: 100
+versions:
+ 0.1.5: 100
+
+statuses:
+ 200: 120
+versions:
+ 0.1.5: 120
+
+statuses:
+ 200: 140
+versions:
+ 0.1.5: 140
+
+statuses:
+ 200: 160
+versions:
+ 0.1.5: 160
+
+statuses:
+ 200: 180
+versions:
+ 0.1.5: 173 0.1.6: 7
+
+statuses:
+ 200: 200
+versions:
+ 0.1.5: 187 0.1.6: 13
+
+statuses:
+ 200: 220
+versions:
+ 0.1.5: 200 0.1.6: 20
+
+^C---------------------------------------------------------------------------
+KeyboardInterrupt
